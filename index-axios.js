@@ -1,4 +1,5 @@
-// Going to attempt to convert all of this to axios
+// R-ALAB 308A.4.1: Working with External Data
+// axios version
 
 import {
   appendCarousel,
