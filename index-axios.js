@@ -97,17 +97,19 @@ axios.interceptors.response.use(
 );
 // ****************** END OF INTERCEPTORS ******************
 
-function updateProgess(e) {
-  console.log(e);
-  const totalProgress = e.total; // the total amount of data
-  const loadedProgress = e.loaded; // how much has actually loaded
+function updateProgess(event) {
+  console.log(event);
+  if (event.lengthComputable) {
+    const totalProgress = event.total; // the total amount of data
+    const loadedProgress = event.loaded; // how much has actually loaded
 
-  // need to calculate for percentage so:
-  // if the total amount of data is greater than 0%
-  if (totalProgress > 0) {
-    const dataPercentage = Math.round((loadedProgress / totalProgress) * 100);
-    // update the progress bar with dataPercentage
-    progressBar.style.width = `${dataPercentage}%`;
+    // need to calculate for percentage so:
+    // if the total amount of data is greater than 0%
+    if (totalProgress > 0) {
+      const dataPercentage = Math.round((loadedProgress / totalProgress) * 100);
+      // update the progress bar with dataPercentage
+      progressBar.style.width = `${dataPercentage}%`;
+    }
   }
 }
 
@@ -135,7 +137,7 @@ async function getCatInfo(e) {
     // const params = { params: { breed_ids: e.target.value, limit: 10 } };
     const config = {
       params: { breed_ids: e.target.value, limit: 10 }, // for the URL
-      onDownloadProgress: updateProgess
+      onDownloadProgress: updateProgess,
     };
     const getCats = await axios.get(`/images/search`, config);
     // console.log(getCats)
