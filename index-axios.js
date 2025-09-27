@@ -33,6 +33,7 @@ const infoDump = document.getElementById("infoDump");
 const progressBar = document.getElementById("progressBar");
 // The get favourites button element.
 const getFavouritesBtn = document.getElementById("getFavouritesBtn");
+const bodyEl = document.querySelector("body");
 
 // Step 0: Store your API key here for reference and easy access.
 const API_KEY =
@@ -84,21 +85,28 @@ async function initialLoad() {
 // ****************** INTERCEPTORS ******************
 axios.interceptors.request.use((request) => {
   console.log("Sending out a request!");
+  bodyEl.style.cursor = "progress";
   return request;
 });
 
 axios.interceptors.response.use(
   (response) => {
     console.log("Data received successfully!");
+    bodyEl.style.cursor = "default";
+    progressBar.style.width = "0%";
+
     // console.log(response); // just testing to see how it works
     return response;
   },
   (error) => {
     console.log("Response is unsuccessful.");
+
     throw error;
   }
 );
 // ****************** END OF INTERCEPTORS ******************
+
+function updateProgess() {}
 
 initialLoad();
 
@@ -118,11 +126,11 @@ async function getCatInfo(e) {
   try {
     // setting up parameters like I had in the fetch version where I had the e.target.value
     // in the template literal and then the &limit=10
-    // from the axios docs: 
-      // `params` are the URL parameters to be sent with the request
-  // Must be a plain object or a URLSearchParams object
+    // from the axios docs:
+    // `params` are the URL parameters to be sent with the request
+    // Must be a plain object or a URLSearchParams object
     const params = { params: { breed_ids: e.target.value, limit: 10 } };
-    // passing 
+    // passing
     const getCats = await axios.get(`/images/search`, params);
     // console.log(getCats)
     const catData = await getCats.data;
