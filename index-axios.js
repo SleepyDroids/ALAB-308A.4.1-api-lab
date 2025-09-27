@@ -37,29 +37,32 @@ const getFavouritesBtn = document.getElementById("getFavouritesBtn");
 // Step 0: Store your API key here for reference and easy access.
 const API_KEY =
   "live_t9JFx3Wn50bwDCcHdU7n1N3Dig99VjOA2SKzbfwYuuWOpVofzzM5JJ06iIXiEnbv";
-
-const baseUrl = "https://api.thecatapi.com/v1/images/search";
+const baseUrl = "https://api.thecatapi.com/v1/";
 
 const config = {
   // will add configurations here as needed for my axios requests
   method: "get",
-  baseUrl: "https://api.thecatapi.com/v1/images/search",
+  baseURL: "https://api.thecatapi.com/v1/",
   headers: {
-    "x-api-key": API_KEY
+    "x-api-key": API_KEY,
   },
   onDownloadProgress: function (progressEvent) {
     console.log(progressEvent);
-  }
-}
+  },
+};
+
+// Setting up global axios defaults according to the docs
+axios.defaults.baseURL = baseUrl;
+axios.defaults.headers.common["x-api-key"] = API_KEY;
 
 //https://api.thecatapi.com/v1/images/search?limit=10&breed_ids=beng&api_key=REPLACE_ME
 
 async function initialLoad() {
   try {
-    const getCats = await axios.get(`${baseUrl}?&api_key=${API_KEY}`);
+    const getCats = await axios.get(`/breeds`);
     // console.log(getCats);
     const catData = await getCats.data;
-    console.log(catData);
+    // console.log(catData);
 
     catData.forEach((breed) => {
       // console.log(breed.name);
@@ -79,20 +82,22 @@ async function initialLoad() {
 }
 
 // ****************** INTERCEPTORS ******************
-axios.interceptors.request.use ((request) => {
+axios.interceptors.request.use((request) => {
   console.log("Sending out a request!");
   return request;
 });
 
-axios.interceptors.response.use ((response) => {
-  console.log("Data received successfully!");
-  // console.log(response); // just testing to see how it works
-  return response;
-}, 
-(error) => {
-console.log("Response is unsuccessful.");
-throw error;
-});
+axios.interceptors.response.use(
+  (response) => {
+    console.log("Data received successfully!");
+    // console.log(response); // just testing to see how it works
+    return response;
+  },
+  (error) => {
+    console.log("Response is unsuccessful.");
+    throw error;
+  }
+);
 // ****************** END OF INTERCEPTORS ******************
 
 initialLoad();
@@ -103,7 +108,7 @@ breedSelect.addEventListener("change", getCatInfo);
 // setting up async function to be used inside of the event listener
 async function getCatInfo(e) {
   // can use 'e' here because it is passed through my event listener
-  console.log(e.target.value);
+  // console.log(e.target.value);
   // console.log(targetValue); // Thanks for the help Jade!
   // I'm using the e.target.value to grab the breed.id from earlier directly from the HTML element
   // and inputting it into the fetch url since that is an option of grabbing data according to the
@@ -111,50 +116,47 @@ async function getCatInfo(e) {
   // Also when I added my key, it gave me access to the breed information with the images as well
   // previous API request in the earlier function only gave me breed information
   try {
-  const getCats = await axios.get(
-    `${baseUrl}?breed_ids=${e.target.value}&limit=10&api_key=${API_KEY}`
-  );
-  // console.log(getCats)
-  const catData = await getCats.data;
-  console.log(catData);
+    const getCats = await axios.get(`/images/search`);
+    // console.log(getCats)
+    const catData = await getCats.data;
 
-  clear(); // clear before looping through data
-  // looping to grab cat data from the API
-  catData.forEach((info) => {
-    // for each object in the array, create a new element for the carousel
-    // needs three arguments: imgsrc, imgalt, imgID -- stash the corresponding info into a variable
-    // I need to find where in the api I can retrieve that information
-    // console.log(info.breeds[0].name);
-    const catImagesAlt = info.breeds[0].name;
-    const catImages = info.url;
-    const catImageId = info.id;
+    clear(); // clear before looping through data
+    // looping to grab cat data from the API
+    catData.forEach((info) => {
+      // for each object in the array, create a new element for the carousel
+      // needs three arguments: imgsrc, imgalt, imgID -- stash the corresponding info into a variable
+      // I need to find where in the api I can retrieve that information
+      // console.log(info.breeds[0].name);
+      const catImagesAlt = info.breeds[0].name;
+      const catImages = info.url;
+      const catImageId = info.id;
 
-    let newCarousel = createCarouselItem(catImages, catImagesAlt, catImageId);
-    appendCarousel(newCarousel); // function imported from Carousel.js
+      let newCarousel = createCarouselItem(catImages, catImagesAlt, catImageId);
+      appendCarousel(newCarousel); // function imported from Carousel.js
 
-    // beginning of logic for number range values from Cat API
-    if (info.breeds[0].shedding_level == 3) {
-      info.breeds[0].shedding_level = "Moderate amount of shedding";
-    } else if (info.breeds[0].shedding_level <= 2) {
-      info.breeds[0].shedding_level = "Low amount of shedding";
-    } else {
-      info.breeds[0].shedding_level = "High amount of shedding";
-    }
+      // beginning of logic for number range values from Cat API
+      if (info.breeds[0].shedding_level == 3) {
+        info.breeds[0].shedding_level = "Moderate amount of shedding";
+      } else if (info.breeds[0].shedding_level <= 2) {
+        info.breeds[0].shedding_level = "Low amount of shedding";
+      } else {
+        info.breeds[0].shedding_level = "High amount of shedding";
+      }
 
-    if (info.breeds[0].hypoallergenic == 0) {
-      info.breeds[0].hypoallergenic = "Not hypoallergenic";
-    } else {
-      info.breeds[0].hypoallergenic = "Hypoallergenic";
-    }
+      if (info.breeds[0].hypoallergenic == 0) {
+        info.breeds[0].hypoallergenic = "Not hypoallergenic";
+      } else {
+        info.breeds[0].hypoallergenic = "Hypoallergenic";
+      }
 
-    if (info.breeds[0].alt_names == "") {
-      info.breeds[0].alt_names = "No alternative names known";
-    } else {
-      info.breeds[0].alt_names = info.breeds[0].alt_names;
-    }
+      if (info.breeds[0].alt_names == "") {
+        info.breeds[0].alt_names = "No alternative names known";
+      } else {
+        info.breeds[0].alt_names = info.breeds[0].alt_names;
+      }
 
-    // beginning of information to be added to the infoDump section
-    infoDump.innerHTML = `
+      // beginning of information to be added to the infoDump section
+      infoDump.innerHTML = `
     <h3>Additional Information</h3>
     <ul>
       <li><b>Name:</b> ${info.breeds[0].name}
@@ -169,11 +171,10 @@ async function getCatInfo(e) {
     </ul>  
     <p>For more information, please visit the <a href="${info.breeds[0].wikipedia_url}">${info.breeds[0].name}</a> Wikipedia page.
     `; // end of innerHTML template lieteral
-  });
-
-} catch (error) {
-  console.error(error);
-}
+    });
+  } catch (error) {
+    console.error(error);
+  }
 
   start(); // append Carousel and add Info Dump then start
 } // end of catInfo() async function
