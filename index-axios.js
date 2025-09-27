@@ -1,6 +1,21 @@
 // R-ALAB 308A.4.1: Working with External Data
 // axios version
 
+/*
+What I need to adjust for axios: 
+- All my fetch requests
+- Inteceptors for progress and when not in progress (so an indicator that the API is loading)
+
+Example from Quinn: 
+axios.interceptors.request.use(function (config) {
+    // Do something before request is sent
+    return config;
+  }
+);
+*/
+
+// console.log("testing that I linked the axios file");
+
 import {
   appendCarousel,
   clear,
@@ -24,6 +39,12 @@ const API_KEY =
   "live_t9JFx3Wn50bwDCcHdU7n1N3Dig99VjOA2SKzbfwYuuWOpVofzzM5JJ06iIXiEnbv";
 
 const baseImgUrl = "https://api.thecatapi.com/v1/images/search";
+const baseBreedsUrl = "https://api.thecatapi.com/v1/breeds/";
+
+const config = {
+  // will add configurations here as needed for my axios requests
+  method: "get",
+}
 
 // console.log(`${baseImgUrl}?api_key=${API_KEY}&limit=10&breed_ids=beng`);
 
@@ -41,24 +62,27 @@ const baseImgUrl = "https://api.thecatapi.com/v1/images/search";
 //search?api_key=${API_KEY}&order=RAND&has_breeds=1
 
 async function initialLoad() {
-  const getCats = await fetch(`https://api.thecatapi.com/v1/breeds/`);
-  // console.log(getCats);
-  const catData = await getCats.json();
-  // console.log(catData);
+  try {
+    const getCats = await axios.get(baseBreedsUrl);
+    // console.log(getCats);
+    const catData = await getCats.data;
+    // console.log(catData);
 
-  catData.forEach((breed) => {
-    // console.log(breed.name);
-    // console.log(breedSelect);
-    // creating new options
-    const createOption = document.createElement("option");
-    createOption.value = breed.id;
-    createOption.textContent = breed.name;
-    // each value attribute needs to equal the id
-    // each display text is equal to name of the breed
+    catData.forEach((breed) => {
+      // console.log(breed.name);
+      // console.log(breedSelect);
+      // creating new options
+      const createOption = document.createElement("option");
+      createOption.value = breed.id;
+      createOption.textContent = breed.name;
+      // each value attribute needs to equal the id
+      // each display text is equal to name of the breed
 
-    breedSelect.appendChild(createOption);
-  });
-
+      breedSelect.appendChild(createOption);
+    });
+  } catch (error) {
+    console.error(error);
+  }
 }
 
 initialLoad();
@@ -87,21 +111,24 @@ async function getCatInfo(e) {
   console.log(e.target.value);
   // console.log(targetValue); // Thanks for the help Jade!
   // I'm using the e.target.value to grab the breed.id from earlier directly from the HTML element
-  // and inputting it into the fetch url since that is an option of grabbing data according to the 
+  // and inputting it into the fetch url since that is an option of grabbing data according to the
   // CAT API documentation
-  // Also when I added my key, it gave me access to the breed information with the images as well 
-  // previous API request in the earlier function only gave me breed information 
-  const getCats = await fetch(`https://api.thecatapi.com/v1/images/search?breed_ids=${e.target.value}&limit=10&api_key=${API_KEY}`);
+  // Also when I added my key, it gave me access to the breed information with the images as well
+  // previous API request in the earlier function only gave me breed information
+  try {
+  const getCats = await axios.get(
+    `${baseImgUrl}?breed_ids=${e.target.value}&limit=10&api_key=${API_KEY}`
+  );
   // console.log(getCats)
-  const catData = await getCats.json();
+  const catData = await getCats.data;
   console.log(catData);
 
-      clear(); // clear before looping through data
+  clear(); // clear before looping through data
   // looping to grab cat data from the API
   catData.forEach((info) => {
     // for each object in the array, create a new element for the carousel
     // needs three arguments: imgsrc, imgalt, imgID -- stash the corresponding info into a variable
-    // I need to find where in the api I can retrieve that information 
+    // I need to find where in the api I can retrieve that information
     // console.log(info.breeds[0].name);
     const catImagesAlt = info.breeds[0].name;
     const catImages = info.url;
@@ -110,7 +137,7 @@ async function getCatInfo(e) {
     let newCarousel = createCarouselItem(catImages, catImagesAlt, catImageId);
     appendCarousel(newCarousel); // function imported from Carousel.js
 
-  // beginning of logic for number range values from Cat API
+    // beginning of logic for number range values from Cat API
     if (info.breeds[0].shedding_level == 3) {
       info.breeds[0].shedding_level = "Moderate amount of shedding";
     } else if (info.breeds[0].shedding_level <= 2) {
@@ -146,14 +173,15 @@ async function getCatInfo(e) {
       <li><b>General Description:</b> ${info.breeds[0].description}
     </ul>  
     <p>For more information, please visit the <a href="${info.breeds[0].wikipedia_url}">${info.breeds[0].name}</a> Wikipedia page.
-    ` // end of innerHTML template lieteral 
-
-
+    `; // end of innerHTML template lieteral
   });
+
+} catch (error) {
+  console.error(error);
+}
 
   start(); // append Carousel and add Info Dump then start
 } // end of catInfo() async function
-
 
 /**
  * 3. Fork your own sandbox, creating a new one named "JavaScript Axios Lab."

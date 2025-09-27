@@ -63,7 +63,7 @@ async function initialLoad() {
   // we're making a nested object to mimic the 'e' parameter
   // I also forgot you can have anonymous objects
   getCatInfo({target: {
-    value: "abys"
+    value: "abys" // we know this is first cat in the API 
   }});
 }
 
