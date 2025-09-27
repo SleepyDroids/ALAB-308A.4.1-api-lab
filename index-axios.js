@@ -44,6 +44,9 @@ const baseBreedsUrl = "https://api.thecatapi.com/v1/breeds/";
 const config = {
   // will add configurations here as needed for my axios requests
   method: "get",
+  headers: {
+    "x-api-key": API_KEY
+  }
 }
 
 // console.log(`${baseImgUrl}?api_key=${API_KEY}&limit=10&breed_ids=beng`);
@@ -101,6 +104,22 @@ initialLoad();
  * - Each new selection should clear, re-populate, and restart the Carousel.
  * - Add a call to this function to the end of your initialLoad function above to create the initial carousel.
  */
+
+// ****************** INTERCEPTORS ******************
+axios.interceptors.request.use ( (request) => {
+  console.log("sending out a request");
+  return request;
+});
+
+axios.interceptors.response.use ((response) => {
+  console.log("Data received successfully!");
+  return response;
+}, 
+(error) => {
+console.log("Response is unsuccessful.");
+throw error;
+});
+// ****************** END OF INTERCEPTORS ******************
 
 // setting up event listener
 breedSelect.addEventListener("change", getCatInfo);
