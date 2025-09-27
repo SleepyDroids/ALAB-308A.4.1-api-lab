@@ -66,10 +66,10 @@ const config = {
 
 async function initialLoad() {
   try {
-    const getCats = await axios.get(baseBreedsUrl);
+    const getCats = await axios.get(`${baseImgUrl}?&api_key=${API_KEY}`);
     // console.log(getCats);
     const catData = await getCats.data;
-    // console.log(catData);
+    console.log(catData);
 
     catData.forEach((breed) => {
       // console.log(breed.name);
