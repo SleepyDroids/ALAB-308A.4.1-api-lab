@@ -40,18 +40,6 @@ const API_KEY =
   "live_t9JFx3Wn50bwDCcHdU7n1N3Dig99VjOA2SKzbfwYuuWOpVofzzM5JJ06iIXiEnbv";
 const baseUrl = "https://api.thecatapi.com/v1/";
 
-const config = {
-  // will add configurations here as needed for my axios requests
-  method: "get",
-  baseURL: "https://api.thecatapi.com/v1/",
-  headers: {
-    "x-api-key": API_KEY,
-  },
-  onDownloadProgress: function (progressEvent) {
-    console.log(progressEvent);
-  },
-};
-
 // Setting up global axios defaults according to the docs
 axios.defaults.baseURL = baseUrl;
 axios.defaults.headers.common["x-api-key"] = API_KEY;
@@ -93,7 +81,10 @@ axios.interceptors.response.use(
   (response) => {
     console.log("Data received successfully!");
     bodyEl.style.cursor = "default";
-    progressBar.style.width = "0%";
+    // if statement for resetting for each request, I think
+    if (progressBar) {
+      progressBar.style.width = "0%";
+    }
 
     // console.log(response); // just testing to see how it works
     return response;
@@ -106,7 +97,19 @@ axios.interceptors.response.use(
 );
 // ****************** END OF INTERCEPTORS ******************
 
-function updateProgess() {}
+function updateProgess(e) {
+  console.log(e);
+  const totalProgress = e.total; // the total amount of data
+  const loadedProgress = e.loaded; // how much has actually loaded
+
+  // need to calculate for percentage so:
+  // if the total amount of data is greater than 0%
+  if (totalProgress > 0) {
+    const dataPercentage = Math.round((loadedProgress / totalProgress) * 100);
+    // update the progress bar with dataPercentage
+    progressBar.style.width = `${dataPercentage}%`;
+  }
+}
 
 initialLoad();
 
@@ -129,9 +132,12 @@ async function getCatInfo(e) {
     // from the axios docs:
     // `params` are the URL parameters to be sent with the request
     // Must be a plain object or a URLSearchParams object
-    const params = { params: { breed_ids: e.target.value, limit: 10 } };
-    // passing
-    const getCats = await axios.get(`/images/search`, params);
+    // const params = { params: { breed_ids: e.target.value, limit: 10 } };
+    const config = {
+      params: { breed_ids: e.target.value, limit: 10 }, // for the URL
+      onDownloadProgress: updateProgess
+    };
+    const getCats = await axios.get(`/images/search`, config);
     // console.log(getCats)
     const catData = await getCats.data;
 
@@ -143,7 +149,7 @@ async function getCatInfo(e) {
       // needs three arguments: imgsrc, imgalt, imgID -- stash the corresponding info into a variable
       // I need to find where in the api I can retrieve that information
       // console.log(info.breeds[0].name);
-      const catImagesAlt = e.target.textContent;
+      const catImagesAlt = info.breeds[0].name;
       const catImages = info.url;
       const catImageId = info.id;
 
