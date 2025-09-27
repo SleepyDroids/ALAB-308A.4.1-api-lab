@@ -116,18 +116,26 @@ async function getCatInfo(e) {
   // Also when I added my key, it gave me access to the breed information with the images as well
   // previous API request in the earlier function only gave me breed information
   try {
-    const getCats = await axios.get(`/images/search`);
+    // setting up parameters like I had in the fetch version where I had the e.target.value
+    // in the template literal and then the &limit=10
+    // from the axios docs: 
+      // `params` are the URL parameters to be sent with the request
+  // Must be a plain object or a URLSearchParams object
+    const params = { params: { breed_ids: e.target.value, limit: 10 } };
+    // passing 
+    const getCats = await axios.get(`/images/search`, params);
     // console.log(getCats)
     const catData = await getCats.data;
 
     clear(); // clear before looping through data
     // looping to grab cat data from the API
+
     catData.forEach((info) => {
       // for each object in the array, create a new element for the carousel
       // needs three arguments: imgsrc, imgalt, imgID -- stash the corresponding info into a variable
       // I need to find where in the api I can retrieve that information
       // console.log(info.breeds[0].name);
-      const catImagesAlt = info.breeds[0].name;
+      const catImagesAlt = e.target.textContent;
       const catImages = info.url;
       const catImageId = info.id;
 
